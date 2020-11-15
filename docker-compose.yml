@@ -7,6 +7,12 @@ volumes:
 services:
 
   # TODO сервис nginx на локальном порту 22000, смапить nginx-data/upstreams.conf в /etc/nginx/conf.d/upstreams.conf
+  nginx:
+    container_name: nginx.service
+    build:
+      context: nginx
+    ports:
+      - 22000:80
 
   postgres:
     container_name: postgres.service

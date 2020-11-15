@@ -1,0 +1,72 @@
+1. Изучите docker-compose.yml. Что делает каждая из директив? Чем отличаются 3 варианта использования volumes?
+
+директивы:
+    volumes
+        driver
+    services - перечисление сервисов, в других сервисах можно ссылаться на этот под этим именем
+
+    container_name - имя контейнера
+    build
+        context - путь к папке содержащей Dockerfile и из какой папки будет сборка докер образа
+    environment - переменные среды доступные в контейнере
+    ports - маппинг портов нашей машины и порта приложения в виртаулке (контейнере)
+
+
+
+2. Изучите Dockerfile в каждом из сервисов. Что делает каждая из директив? Что означает повторение директивы FROM? Чем RUN отличается от CMD?
+
+Что делает каждая из директив?
+    FROM maven:3.6.3-jdk-11 as builder      - говорим какой образ будет базовым для нашего, на какой образ мы будем наслаивать своё
+    WORKDIR /source                         - текущая рабочая директория
+    COPY . /source                          - копируем данные из локальной машины в выбранную папку в образе
+    RUN mvn clean package                   - запускаем команду и сохраняем результаты в образе
+    EXPOSE 7000                             - говорим контейнеру открыть этот порт и смапить на этот порт хостовой машины
+    CMD java -jar demo-0.0.1-SNAPSHOT.jar   - говорим контейнеру какую команду запустить при старте
+
+Что означает повторение директивы FROM?
+    https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
+    Что мы собираемся либо сделать несколько образов, либо заиспользовать что-то из одного образа в другом.
+
+Чем RUN отличается от CMD?
+    https://docs.docker.com/engine/reference/builder/#cmd
+    RUN - результат выполнения кладётся в образ
+    CMD - выполняется при старте контейнера, и на образ результат выполнения никак не влияет
+
+
+
+3. Изучите скрипты сборки, запуска и остановки. За что отвечает каждый из параметров команды docker-compose?
+
+    docker-compose build $@     https://docs.docker.com/compose/reference/build/
+        build   - собирает все образы описанные в docker-compose.yml,
+        $@      - аргументы с которыми вызвали rebuild.sh,
+                    see "Bash Special Parameters" https://www.gnu.org/software/bash/manual/html_node/Special-Parameters.html
+
+    docker-compose up -d $@     https://docs.docker.com/compose/reference/up/
+        up      - собирает образы, (пере)создаёт, стартует контейнеры, связывает их с сервисами
+        -d      - Detached mode: Run containers in the background, print new container names.
+
+    docker-compose down --rmi local --remove-orphans    https://docs.docker.com/compose/reference/down/
+        down                - стопаем контейнеры
+        --rmi local         - удаляем локальные образы
+        --remove-orphans    - удяляем контейнеры не определённые в docker-compose.yml
+
+    docker-compose rm -fsv $@
+        rm      - удаляем стопнутые контейнеры сервисов из docker-compose.yml
+        -f      - --force не спрашивать подтверждения
+        -s      - --stop стопем контейнеры до удаления, если они не стопнуты
+        -v      - удаялем анонимные volumes приаттаченные к контейнерам сервисов
+
+4. Запустите все контейнеры и убедитесь что приложение работает. Выведите на экран логи каждого контейнера.
+    chmod +x start.sh
+    ./start.sh postgres frontend backend1
+    http://localhost:22002/
+    docker logs backend1.service
+    docker logs frontend.service
+    docker logs postgres.service
+
+5. Напишите Dockerfile для сервиса nginx. Добавьте сервис в docker-compose.yml.
+
+
+
+
+
