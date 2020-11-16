@@ -13,6 +13,8 @@ services:
       context: nginx
     ports:
       - 22000:80
+    volumes:
+      - ./nginx-data/upstreams.conf:/etc/nginx/conf.d/upstreams.conf
 
   postgres:
     container_name: postgres.service
